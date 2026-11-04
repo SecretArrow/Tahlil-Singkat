@@ -47,6 +47,9 @@ jobs:
         run: |
           set -e
           mkdir -p release-out
+          # Pick exactly one build-tools dir (the runner ships several).
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/ 2>/dev/null | sort -V | tail -1)apksigner"
+          echo "apksigner: $APKSIGNER"
           cd app/build/outputs/apk/release
           for f in *.apk; do
             case "$f" in
@@ -58,9 +61,9 @@ jobs:
             esac
             out="$GITHUB_WORKSPACE/release-out/TahlilSingkat-v2.1.0-${abi}.apk"
             cp "$f" "$out"
-            $ANDROID_HOME/build-tools/*/apksigner verify --print-certs "$out" >/dev/null \
-              && echo "✓ signed: ${abi} ($(wc -c < "$out") bytes)" \
-              || { echo "✗ signature invalid: ${abi}"; exit 1; }
+            "$APKSIGNER" verify --print-certs "$out" >/dev/null \
+              && echo "OK signed: ${abi} ($(wc -c < "$out") bytes)" \
+              || { echo "FAIL signature invalid: ${abi}"; exit 1; }
           done
           ls -lh "$GITHUB_WORKSPACE/release-out/"
 
