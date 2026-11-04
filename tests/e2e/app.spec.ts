@@ -167,3 +167,40 @@ test.describe("Back-to-top button", () => {
     await expect(page.locator("#top")).toBeInViewport();
   });
 });
+
+test.describe("Keep-screen-on (Layar Tetap Hidup)", () => {
+  test("toggles on/off and shows the live status hint", async ({ page }) => {
+    await ready(page);
+    await page.getByLabel("Pengaturan tampilan").click();
+
+    const sw = page.getByRole("switch", { name: "Layar Tetap Hidup" });
+    // Chromium (Capacitor's WebView) supports the Screen Wake Lock API, so the
+    // switch is enabled and starts off.
+    await expect(sw).toBeEnabled();
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+    // Off hint.
+    await expect(page.getByText("Layar boleh terkunci seperti biasa")).toBeVisible();
+
+    await sw.click();
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+    // On hint.
+    await expect(page.getByText("Layar tidak akan terkunci saat membaca")).toBeVisible();
+  });
+
+  test("persisted across reload (cookie restored on mount)", async ({ page }) => {
+    await ready(page);
+    await page.getByLabel("Pengaturan tampilan").click();
+    const sw = page.getByRole("switch", { name: "Layar Tetap Hidup" });
+    await sw.click();
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+    await page.keyboard.press("Escape");
+
+    // Reload — the preference is restored from the cookie on mount.
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Pengaturan tampilan").click();
+    await expect(
+      page.getByRole("switch", { name: "Layar Tetap Hidup" })
+    ).toHaveAttribute("aria-checked", "true");
+  });
+});

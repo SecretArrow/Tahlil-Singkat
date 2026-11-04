@@ -4,6 +4,14 @@ Aplikasi panduan tahlil ringkas: rangkaian zikir, tahlil, Al-Fātihah, Āyatul-K
 
 Dibangun sebagai **app Android native** (APK bertanda tangan, split per-ABI) dari sebuah aplikasi web Next.js, dibungkus oleh [Capacitor](https://capacitorjs.com/) — WebView Android menjalankan static export, jadi tidak perlu server.
 
+### Fitur utama
+
+- 10 bagian tahlil ringkas dengan teks Arab (3 mode font: Mushaf Quran / Amiri / Naskhi pemula), transliterasi Latin, dan terjemahan Indonesia.
+- Panel tampilan: toggle tiap lapisan teks (Arab / transliterasi / terjemahan) on/off.
+- **Layar Tetap Hidup** — cegah layar terkunci saat membaca (toggle on/off di panel Tampilan; memakai Screen Wake Lock API `navigator.wakeLock`, dilepas otomatis saat app di-background, dipasang lagi saat kembali ke foreground).
+- Mode gelap/terang, navigasi mobile, tombol kembali ke atas, progress bar bacaan.
+- Semua preferensi tersimpan otomatis (cookie) dan dipulihkan saat app dibuka lagi.
+
 ---
 
 ## Tech stack

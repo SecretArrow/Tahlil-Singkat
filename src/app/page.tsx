@@ -8,12 +8,16 @@ import { BackToTop } from "@/components/tahlil/back-to-top";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { ArabicStylePanel } from "@/components/arabic-style-panel";
 import { DisplaySettingsPanel } from "@/components/display-settings-panel";
+import { useKeepScreenOn } from "@/hooks/use-keep-screen-on";
 import { tahlilSections } from "@/data/tahlil-content";
 
 export default function Home() {
   const [navOpen, setNavOpen] = React.useState(false);
   const [arabicStyleOpen, setArabicStyleOpen] = React.useState(false);
   const [displayOpen, setDisplayOpen] = React.useState(false);
+  // Keep-screen-on controller lives on the always-mounted page (not inside the
+  // dialog) so the wake lock persists while the settings panel is closed.
+  const keepScreen = useKeepScreenOn();
 
   // Lock scroll when mobile nav is open
   React.useEffect(() => {
@@ -101,6 +105,7 @@ export default function Home() {
       <DisplaySettingsPanel
         open={displayOpen}
         onClose={() => setDisplayOpen(false)}
+        keepScreen={keepScreen}
       />
 
       <BackToTop />

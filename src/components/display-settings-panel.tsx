@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Eye, RotateCcw, X } from "lucide-react";
+import { Eye, Lightbulb, RotateCcw, X } from "lucide-react";
 import { useDisplaySettings } from "@/components/display-settings-provider";
 import { displayToggleLabels } from "@/data/display-settings";
 import {
@@ -15,18 +15,30 @@ import { Switch } from "@/components/ui/switch";
 // Same order as the keys of DisplayToggles for a stable, predictable list.
 const TOGGLE_KEYS = ["arabic", "transliteration", "translation"] as const;
 
+/** Shape of the keep-screen-on controller (from useKeepScreenOn). */
+type KeepScreenControl = {
+  enabled: boolean;
+  setEnabled: (next: boolean) => void;
+  isSupported: boolean;
+};
+
 /**
  * Display settings dialog — lets the reader show/hide each of the three text
- * layers (Arabic / Transliteration / Translation) inside every SectionCard.
- * Changes apply live to the whole page and persist via the
- * DisplaySettingsProvider (cookie + /api/settings fire-and-forget).
+ * layers (Arabic / Transliteration / Translation) inside every SectionCard,
+ * and toggle "keep screen awake" so the screen doesn't lock mid-recitation.
+ *
+ * `keepScreen` is passed in from the always-mounted page (not read here) so
+ * the wake lock survives the dialog opening/closing — Radix Dialog unmounts
+ * its content when closed, which would otherwise release the lock.
  */
 export function DisplaySettingsPanel({
   open,
   onClose,
+  keepScreen,
 }: {
   open: boolean;
   onClose: () => void;
+  keepScreen: KeepScreenControl;
 }) {
   const { toggles, setToggle, reset } = useDisplaySettings();
 
@@ -44,7 +56,7 @@ export function DisplaySettingsPanel({
                   Pengaturan Tampilan
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  Pilih lapisan teks yang ditampilkan.
+                  Lapisan teks &amp; perilaku layar.
                 </p>
               </div>
             </div>
@@ -95,6 +107,38 @@ export function DisplaySettingsPanel({
                 .join(", ") || "(tidak ada)"}
             </span>
           </p>
+
+          {/* Screen wake-lock — separate app-behaviour setting */}
+          <div className="space-y-2 border-t border-border pt-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Lightbulb className="h-3.5 w-3.5" />
+              Layar
+            </div>
+            <label
+              htmlFor="toggle-keep-screen-on"
+              className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-card/60 px-4 py-3 transition-colors hover:bg-accent/40"
+            >
+              <span className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground">
+                  Layar Tetap Hidup
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {keepScreen.isSupported
+                    ? keepScreen.enabled
+                      ? "Layar tidak akan terkunci saat membaca"
+                      : "Layar boleh terkunci seperti biasa"
+                    : "Tidak didukung perangkat ini"}
+                </span>
+              </span>
+              <Switch
+                id="toggle-keep-screen-on"
+                checked={keepScreen.enabled}
+                onCheckedChange={keepScreen.setEnabled}
+                aria-label="Layar Tetap Hidup"
+                disabled={!keepScreen.isSupported}
+              />
+            </label>
+          </div>
 
           {/* Reset */}
           <div className="flex items-center justify-between border-t border-border pt-4">
