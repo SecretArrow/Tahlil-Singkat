@@ -123,12 +123,9 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platforms;android-34
-            build-tools;34.0.0
+      # Note: ubuntu-latest ships the Android SDK (platform-tools, platforms;
+      # android-34, build-tools) at $ANDROID_HOME — no setup-android step
+      # needed, and the action's interactive license prompt hangs in CI.
 
       - name: Install dependencies
         run: npm ci
@@ -196,9 +193,15 @@ jobs:
 
       - name: Verify APK signatures
         run: |
+          # Locate apksigner in whichever build-tools version the runner ships.
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          if [ -z "$APKSIGNER" ]; then
+            echo "::error::apksigner not found under $ANDROID_HOME/build-tools"
+            exit 1
+          fi
           for apk in release-out/*.apk; do
             echo "=== $apk ==="
-            "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$apk" | head -8
+            "$APKSIGNER" verify --print-certs "$apk" | head -8
           done
 
       # Auto-release: create a GitHub Release for this main push, tagged with
