@@ -50,7 +50,15 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 code shrinking + resource shrinking: strips the thousands of
+            // unused Material icon classes (material-icons-extended) and any
+            // unreferenced resources, cutting the APK from ~11 MB to a few MB.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig =
                 if (System.getenv("KEYSTORE_PATH") != null) {
                     signingConfigs.getByName("release")
