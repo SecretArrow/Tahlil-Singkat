@@ -14,10 +14,22 @@ android {
         applicationId = "com.salikchannel.tahlilsingkat"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "2.0.0"
+        versionCode = 5
+        versionName = "2.1.0"
         // App name shown under the launcher icon.
         resValue("string", "app_name", "Tahlil Singkat")
+    }
+
+    // Produce one signed APK per ABI (+ a universal fallback) for every release.
+    // Each ABI gets a distinct versionCode so the set is Play-Store-ready:
+    // arm64-v8a > armeabi-v7a > x86_64 > universal.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86_64")
+            isUniversalApk = true
+        }
     }
 
     // Release signing is driven by env vars set in CI (or a local keystore

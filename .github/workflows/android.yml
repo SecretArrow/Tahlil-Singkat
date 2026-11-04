@@ -33,7 +33,9 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
           echo "Keystore materialised ($(wc -c < app/release.keystore) bytes)."
 
-      - name: Build signed release APK
+      # Builds one signed APK per ABI (arm64-v8a, armeabi-v7a, x86_64) + a
+      # universal fallback — see android.splits.abi in app/build.gradle.kts.
+      - name: Build signed split-per-ABI release APKs
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/app/release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -41,44 +43,70 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease --no-daemon --max-workers=2
 
-      - name: Verify APK
+      - name: Rename + verify APKs
         run: |
-          APK=app/build/outputs/apk/release/app-release.apk
-          ls -lh "$APK"
-          $ANDROID_HOME/build-tools/*/apksigner verify --print-certs "$APK" | head -5 || true
+          set -e
+          mkdir -p release-out
+          cd app/build/outputs/apk/release
+          for f in *.apk; do
+            case "$f" in
+              app-arm64-v8a-release.apk)       abi=arm64-v8a ;;
+              app-armeabi-v7a-release.apk)     abi=armeabi-v7a ;;
+              app-x86_64-release.apk)          abi=x86_64 ;;
+              app-universal-release.apk|app-release.apk) abi=universal ;;
+              *)                               abi=unknown ;;
+            esac
+            out="$GITHUB_WORKSPACE/release-out/TahlilSingkat-v2.1.0-${abi}.apk"
+            cp "$f" "$out"
+            $ANDROID_HOME/build-tools/*/apksigner verify --print-certs "$out" >/dev/null \
+              && echo "✓ signed: ${abi} ($(wc -c < "$out") bytes)" \
+              || { echo "✗ signature invalid: ${abi}"; exit 1; }
+          done
+          ls -lh "$GITHUB_WORKSPACE/release-out/"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: tahlil-singkat-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: release-out/*.apk
           if-no-files-found: error
+
+      # Re-publish on every push: clear any prior v2.1.0 release/tag first.
+      - name: Clear existing release
+        run: gh release delete v2.1.0 --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.0.0
-          name: Tahlil Singkat v2.0.0 (Native Kotlin)
+          tag_name: v2.1.0
+          name: Tahlil Singkat v2.1.0 (Native Kotlin)
           body: |
-            ## Tahlil Singkat v2.0.0 — Native Android (Kotlin + Jetpack Compose)
+            ## Tahlil Singkat v2.1.0 — Native Android (Kotlin + Jetpack Compose)
 
             Port ulang penuh dari aplikasi web Next.js (zip sumber) ke **native Android Kotlin**.
-            Bukan lagi app WebView/Capacitor — sekarang murni Jetpack Compose.
+
+            ### Baru di v2.1.0
+            - **Rilis signed split per-ABI** — 4 APK bertanda tangan: `arm64-v8a`, `armeabi-v7a`, `x86_64`, dan `universal`. Pilih sesuai arsitektur perangkat (universal cocok untuk semua).
+            - **Logo app baru** — Rub el Hizb (bintang segi delapan) emas + bulan sabit krem + bintang, di atas latar gradien zamrud.
+            - **Mode Layar Penuh** — tombol layar-penuh di top bar menyembunyikan status bar & nav bar untuk membaca tanpa gangguan; tombol back mengambang di pojok untuk kembali ke mode biasa.
 
             ### Fitur
-            - 10+ bagian tahlil ringkas: teks Arab (3 mode font: Mushaf Quran / Amiri / Naskhi), transliterasi Latin, terjemahan Indonesia.
-            - Panel Tampilan: toggle Arab / transliterasi / terjemahan on/off.
-            - **Layar Tetap Hidup** — cegah layar terkunci saat membaca (toggle on/off di Pengaturan Tampilan; memakai `FLAG_KEEP_SCREEN_ON` window flag — pola native Android wakelock dari android/skills).
+            - 11 bagian tahlil: teks Arab (3 mode font: Mushaf Quran / Amiri / Naskhi), transliterasi Latin, terjemahan Indonesia.
+            - Panel Tampilan: toggle Arab / transliterasi / terjemahan + **Layar Tetap Hidup** (`FLAG_KEEP_SCREEN_ON`).
+            - Panel Teks Arab: 3 mode + slider ukuran/jarak + perataan + pratinjau langsung.
             - Mode gelap/terang (system/light/dark), daftar isi (drawer), tombol kembali ke atas, progress bar bacaan.
-            - Semua preferensi tersimpan otomatis (SharedPreferences) dan dipulihkan saat app dibuka lagi.
-            - Font Arab asli dibundel: Amiri, Amiri Quran, Scheherazade New.
-            - Warna tema dikonversi persis dari token OKLCH sumber (cream/emerald/gold).
+            - Font Arab asli dibundel: Amiri, Amiri Quran, Scheherazade New. Preferensi tersimpan otomatis (SharedPreferences).
 
             ### Teknis
-            - Bahasa: Kotlin 2.0.21, Jetpack Compose (Material3), AGP 8.7.3, Gradle 8.9.
-            - minSdk 26, targetSdk 34.
-            - Berisi APK signed (release) — pasang langsung.
-          files: app/build/outputs/apk/release/app-release.apk
+            - Kotlin 2.0.21, Jetpack Compose (Material3), AGP 8.7.3, Gradle 8.9, minSdk 26, targetSdk 34.
+            - Semua APK signed dengan keystore rilis (CN=Tahlil Singkat, O=SecretArrow, Jakarta).
+          files: |
+            release-out/TahlilSingkat-v2.1.0-arm64-v8a.apk
+            release-out/TahlilSingkat-v2.1.0-armeabi-v7a.apk
+            release-out/TahlilSingkat-v2.1.0-x86_64.apk
+            release-out/TahlilSingkat-v2.1.0-universal.apk
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

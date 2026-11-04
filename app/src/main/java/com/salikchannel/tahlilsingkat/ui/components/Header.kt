@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.TextFields
@@ -45,6 +46,7 @@ fun TahlilTopBar(
     onOpenArabic: () -> Unit,
     onCycleTheme: () -> Unit,
     onOpenNav: () -> Unit,
+    onEnterFullscreen: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -98,6 +100,9 @@ fun TahlilTopBar(
                     ThemeMode.DARK -> Icons.Filled.DarkMode
                 }
                 Icon(icon, contentDescription = "Ganti tema")
+            }
+            IconButton(onClick = onEnterFullscreen) {
+                Icon(Icons.Filled.Fullscreen, contentDescription = "Layar penuh")
             }
             IconButton(onClick = onOpenNav) {
                 Icon(Icons.Filled.Menu, contentDescription = "Daftar isi")

@@ -4,6 +4,8 @@ package com.salikchannel.tahlilsingkat.ui
 
 import android.app.Activity
 import android.view.WindowManager
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +85,25 @@ fun KeepScreenOnEffect(enabled: Boolean) {
     }
 }
 
+/** Immersive full-screen reading mode: hides the status + navigation bars while
+ *  enabled, with transient-swipe-to-reveal. Restores them on exit/dispose. */
+@Composable
+fun FullscreenEffect(enabled: Boolean) {
+    val view = LocalView.current
+    DisposableEffect(enabled) {
+        val window = (view.context as? Activity)?.window
+        val controller = window?.let { WindowInsetsControllerCompat(it, view) }
+        if (enabled) {
+            controller?.hide(WindowInsetsCompat.Type.systemBars())
+            controller?.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            controller?.show(WindowInsetsCompat.Type.systemBars())
+        }
+        onDispose { controller?.show(WindowInsetsCompat.Type.systemBars()) }
+    }
+}
+
 @Composable
 fun TahlilApp() {
     val settings = rememberSettingsState()
@@ -106,6 +130,8 @@ private fun AppContent(settings: SettingsState) {
     val listState = rememberLazyListState()
     var showDisplay by remember { mutableStateOf(false) }
     var showArabic by remember { mutableStateOf(false) }
+    var fullscreen by remember { mutableStateOf(false) }
+    FullscreenEffect(fullscreen)
 
     val cycleTheme: () -> Unit = {
         val next = when (settings.themeMode) {
@@ -130,39 +156,67 @@ private fun AppContent(settings: SettingsState) {
             DrawerContent(onNavigate = goToSection, onClose = { scope.launch { drawer.close() } })
         },
     ) {
-        Scaffold(
-            topBar = {
-                Column {
-                    TahlilTopBar(
-                        themeMode = settings.themeMode,
-                        onOpenDisplay = { showDisplay = true },
-                        onOpenArabic = { showArabic = true },
-                        onCycleTheme = { cycleTheme() },
-                        onOpenNav = { scope.launch { drawer.open() } },
-                    )
-                    ScrollProgress(listState)
+        Box(Modifier.fillMaxSize()) {
+            Scaffold(
+                topBar = {
+                    if (!fullscreen) {
+                        Column {
+                            TahlilTopBar(
+                                themeMode = settings.themeMode,
+                                onOpenDisplay = { showDisplay = true },
+                                onOpenArabic = { showArabic = true },
+                                onCycleTheme = { cycleTheme() },
+                                onOpenNav = { scope.launch { drawer.open() } },
+                                onEnterFullscreen = { fullscreen = true },
+                            )
+                            ScrollProgress(listState)
+                        }
+                    }
+                },
+                floatingActionButton = { BackToTopButton(listState) { scope.launch { listState.animateScrollToItem(0) } } },
+                containerColor = MaterialTheme.colorScheme.background,
+            ) { inner ->
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = if (fullscreen) 12.dp else inner.calculateTopPadding(),
+                        bottom = 80.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                ) {
+                    item { Hero(onNavigate = goToSection, modifier = Modifier.padding(top = 4.dp)) }
+                    items(tahlilSections.size) { i ->
+                        val section = tahlilSections[i]
+                        SectionCard(
+                            section = section,
+                            toggles = settings.displayToggles,
+                            arabic = settings.arabicStyle,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
+                    item { Footer(modifier = Modifier.padding(horizontal = 16.dp)) }
                 }
-            },
-            floatingActionButton = { BackToTopButton(listState) { scope.launch { listState.animateScrollToItem(0) } } },
-            containerColor = MaterialTheme.colorScheme.background,
-        ) { inner ->
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = inner.calculateTopPadding(), bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-            ) {
-                item { Hero(onNavigate = goToSection, modifier = Modifier.padding(top = 4.dp)) }
-                items(tahlilSections.size) { i ->
-                    val section = tahlilSections[i]
-                    SectionCard(
-                        section = section,
-                        toggles = settings.displayToggles,
-                        arabic = settings.arabicStyle,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+            }
+            // Floating back-to-normal button while in immersive full-screen.
+            if (fullscreen) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.92f))
+                        .clickableNoRipple { fullscreen = false },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Filled.FullscreenExit,
+                        contentDescription = "Keluar dari layar penuh",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
-                item { Footer(modifier = Modifier.padding(horizontal = 16.dp)) }
             }
         }
     }

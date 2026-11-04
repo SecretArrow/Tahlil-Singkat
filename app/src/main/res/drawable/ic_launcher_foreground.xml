@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- White crescent + star foreground, centered in the 108dp adaptive safe zone. -->
+<!-- App icon foreground: Rub el Hizb (8-point star) in gold, with a cream
+     crescent + gold star at the centre — an Islamic-themed, attractive mark.
+     All geometry stays inside the 108dp adaptive safe zone (radius ~31). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Crescent: outer circle r=26 centred at (50,54), inner circle r=22 offset right -->
+
+    <!-- Outer 8-point star (two overlapping squares, even-odd → star frame). -->
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M50,28
-            a26,26 0 1,0 0,52
-            a22,26 0 1,1 0,-52 z" />
-    <!-- Small accompanying star/dot -->
+        android:fillColor="#FFC69435"
+        android:fillType="evenOdd"
+        android:pathData="M32,32 L76,32 L76,76 L32,76 Z M54,32 L76,54 L54,76 L32,54 Z" />
+
+    <!-- Inner 8-point star (lighter gold, nested for depth). -->
     <path
         android:fillColor="#FFE0AD51"
-        android:pathData="M74,38 l2.5,5.5 l6,0.6 l-4.5,4 l1.4,5.9 l-5.4,-3.1 l-5.4,3.1 l1.4,-5.9 l-4.5,-4 l6,-0.6 z" />
+        android:fillType="evenOdd"
+        android:pathData="M40,40 L68,40 L68,68 L40,68 Z M54,40 L68,54 L54,68 L40,54 Z" />
+
+    <!-- Cream crescent (full moon minus offset disc), centred. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,42 a12,12 0 1,0 0,24 a9.5,12 0 1,1 0,-24 z" />
+
+    <!-- Small gold 5-point star beside the crescent opening. -->
+    <path
+        android:fillColor="#FFE0AD51"
+        android:pathData="M64,45.5 L65.06,48.54 L68.28,48.61 L65.71,50.56 L66.64,53.64 L64,51.8 L61.36,53.64 L62.29,50.56 L59.72,48.61 L62.94,48.54 Z" />
 </vector>
