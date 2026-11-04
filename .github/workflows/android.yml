@@ -59,7 +59,7 @@ jobs:
               app-universal-release.apk|app-release.apk) abi=universal ;;
               *)                               abi=unknown ;;
             esac
-            out="$GITHUB_WORKSPACE/release-out/TahlilSingkat-v2.1.0-${abi}.apk"
+            out="$GITHUB_WORKSPACE/release-out/TahlilSingkat-v2.2.0-${abi}.apk"
             cp "$f" "$out"
             "$APKSIGNER" verify --print-certs "$out" >/dev/null \
               && echo "OK signed: ${abi} ($(wc -c < "$out") bytes)" \
@@ -74,30 +74,35 @@ jobs:
           path: release-out/*.apk
           if-no-files-found: error
 
-      # Re-publish on every push: clear any prior v2.1.0 release/tag first.
+      # Re-publish on every push: clear any prior v2.2.0 release/tag first.
       - name: Clear existing release
-        run: gh release delete v2.1.0 --yes --cleanup-tag || true
+        run: gh release delete v2.2.0 --yes --cleanup-tag || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.1.0
-          name: Tahlil Singkat v2.1.0 (Native Kotlin)
+          tag_name: v2.2.0
+          name: Tahlil Singkat v2.2.0 (Native Kotlin)
           body: |
-            ## Tahlil Singkat v2.1.0 — Native Android (Kotlin + Jetpack Compose)
+            ## Tahlil Singkat v2.2.0 — Native Android (Kotlin + Jetpack Compose)
 
             Port ulang penuh dari aplikasi web Next.js (zip sumber) ke **native Android Kotlin**.
 
-            ### Baru di v2.1.0
-            - **Rilis signed split per-ABI** — 4 APK bertanda tangan: `arm64-v8a`, `armeabi-v7a`, `x86_64`, dan `universal`. Pilih sesuai arsitektur perangkat (universal cocok untuk semua).
-            - **Logo app baru** — Rub el Hizb (bintang segi delapan) emas + bulan sabit krem + bintang, di atas latar gradien zamrud.
-            - **Mode Layar Penuh** — tombol layar-penuh di top bar menyembunyikan status bar & nav bar untuk membaca tanpa gangguan; tombol back mengambang di pojok untuk kembali ke mode biasa.
+            ### Baru di v2.2.0
+            - **Tombol "Mulai"** di Hero (sebelumnya "Mulai Membaca"), tetap bersama tombol Tahlil / Dzikir / Doa.
+            - **Lanjut bacaan terakhir** — app otomatis membuka kembali pada bagian terakhir yang dibaca (posisi tersimpan otomatis).
+            - **Konfirmasi sebelum keluar** — tombol back dari layar utama memunculkan dialog "Keluar dari aplikasi?" (Batal / Keluar).
+            - **Koma teks Arab mengikuti terjemahan** (default mati) — jika dinyalakan di Pengaturan Tampilan, teks Arab memakai koma Arab (،) pada titik yang sama dengan koma terjemahan (mis. "keluarga, sahabat, istri, anak cucu…").
+
+            ### Sejak v2.1.0
+            - Rilis signed split per-ABI (4 APK: `arm64-v8a`, `armeabi-v7a`, `x86_64`, `universal`).
+            - Logo app Rub el Hizb + bulan sabit, mode Layar Penuh (immersive), R8 shrinking (APK ~1,8 MB).
 
             ### Fitur
             - 11 bagian tahlil: teks Arab (3 mode font: Mushaf Quran / Amiri / Naskhi), transliterasi Latin, terjemahan Indonesia.
-            - Panel Tampilan: toggle Arab / transliterasi / terjemahan + **Layar Tetap Hidup** (`FLAG_KEEP_SCREEN_ON`).
+            - Panel Tampilan: toggle Arab / transliterasi / terjemahan + Layar Tetap Hidup + koma teks Arab.
             - Panel Teks Arab: 3 mode + slider ukuran/jarak + perataan + pratinjau langsung.
             - Mode gelap/terang (system/light/dark), daftar isi (drawer), tombol kembali ke atas, progress bar bacaan.
             - Font Arab asli dibundel: Amiri, Amiri Quran, Scheherazade New. Preferensi tersimpan otomatis (SharedPreferences).
@@ -106,10 +111,10 @@ jobs:
             - Kotlin 2.0.21, Jetpack Compose (Material3), AGP 8.7.3, Gradle 8.9, minSdk 26, targetSdk 34.
             - Semua APK signed dengan keystore rilis (CN=Tahlil Singkat, O=SecretArrow, Jakarta).
           files: |
-            release-out/TahlilSingkat-v2.1.0-arm64-v8a.apk
-            release-out/TahlilSingkat-v2.1.0-armeabi-v7a.apk
-            release-out/TahlilSingkat-v2.1.0-x86_64.apk
-            release-out/TahlilSingkat-v2.1.0-universal.apk
+            release-out/TahlilSingkat-v2.2.0-arm64-v8a.apk
+            release-out/TahlilSingkat-v2.2.0-armeabi-v7a.apk
+            release-out/TahlilSingkat-v2.2.0-x86_64.apk
+            release-out/TahlilSingkat-v2.2.0-universal.apk
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

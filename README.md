@@ -20,6 +20,10 @@ Ini adalah **port ulang penuh** dari aplikasi web Next.js (di folder zip sumber)
 - **10+ bagian tahlil** dengan teks Arab (3 mode font: **Mushaf Quran** / **Amiri Standar** / **Naskhi Tebal**), transliterasi Latin, dan terjemahan Indonesia. Setiap ayat dipecah ke baris tersendiri; tanda akhir ayah (۝) dipertahankan.
 - **Panel Tampilan** — toggle tiap lapisan teks (Arab / transliterasi / terjemahan) on/off.
 - **Pengaturan Teks Arab** — 3 mode font + slider ukuran huruf, jarak antarbaris, jarak antarkata, jarak antarhuruf, dan perataan (kanan / rata kanan-kiri), dengan pratinjau langsung.
+- **Lanjut bacaan terakhir** — app otomatis membuka kembali pada bagian terakhir yang dibaca; posisi tersimpan otomatis (SharedPreferences).
+- **Konfirmasi sebelum keluar** — tombol back dari layar utama memunculkan dialog "Keluar dari aplikasi?" (Batal / Keluar); saat layar penuh, back keluar dari mode penuh dulu.
+- **Koma teks Arab mengikuti terjemahan** (default mati, di Pengaturan Tampilan) — jika dinyalakan, teks Arab memakai koma Arab (،) pada titik yang sama dengan koma terjemahan (mis. "...keluarga, sahabat, istri, anak cucu...").
+- **Hero** — tombol **Mulai** (ke bagian pertama), serta **Tahlil** / **Dzikir** / **Doa** untuk lompat langsung.
 - **Layar Tetap Hidup** — cegah layar terkunci saat membaca (toggle on/off di Pengaturan Tampilan). Memakai `WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON` — pola native Android yang direkomendasikan (setara `keepScreenOn` di Compose), lebih andal daripada Screen Wake Lock API web karena bertahan saat app di-background.
 - **Mode Layar Penuh** — tombol layar-penuh di top bar menyembunyikan status bar & navigation bar untuk membaca tanpa gangguan (immersive, `WindowInsetsControllerCompat`); tombol back mengambang di pojok kanan atas untuk kembali ke mode biasa.
 - **Logo app** — Rub el Hizb (bintang segi delapan) emas + bulan sabit krem + bintang, di atas latar gradien zamrud (adaptive icon, vector).

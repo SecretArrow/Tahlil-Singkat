@@ -32,6 +32,16 @@ class SettingsState(context: Context) {
         private set
     var keepScreenOn: Boolean by mutableStateOf(prefs.getBoolean(KEY_KEEP_SCREEN_ON, false))
         private set
+    /** When true, Arabic text uses Arabic commas (،) at the breakpoints that
+     *  correspond to commas in the Indonesian translation (for blocks that
+     *  provide an [com.salikchannel.tahlilsingkat.data.ContentBlock.arabicComma]
+     *  variant). Default off. */
+    var arabicCommaMode: Boolean by mutableStateOf(prefs.getBoolean(KEY_ARABIC_COMMA, false))
+        private set
+    /** Last section index the user was reading (0-based, -1 = not yet read).
+     *  Used to restore scroll position when the app reopens. */
+    var lastReadSection: Int by mutableStateOf(prefs.getInt(KEY_LAST_SECTION, -1))
+        private set
 
     fun setTheme(mode: ThemeMode) {
         themeMode = mode
@@ -92,6 +102,17 @@ class SettingsState(context: Context) {
         prefs.edit().putBoolean(KEY_KEEP_SCREEN_ON, on).apply()
     }
 
+    fun setArabicComma(on: Boolean) {
+        arabicCommaMode = on
+        prefs.edit().putBoolean(KEY_ARABIC_COMMA, on).apply()
+    }
+
+    fun setLastRead(index: Int) {
+        if (index == lastReadSection) return
+        lastReadSection = index
+        prefs.edit().putInt(KEY_LAST_SECTION, index).apply()
+    }
+
     private fun saveArabicStyle() {
         val s = arabicStyle
         prefs.edit()
@@ -138,6 +159,8 @@ class SettingsState(context: Context) {
         private const val KEY_TRANSLIT = "translit"
         private const val KEY_TRANSLATION = "translation"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
+        private const val KEY_ARABIC_COMMA = "arabic_comma_mode"
+        private const val KEY_LAST_SECTION = "last_read_section"
         private const val KEY_AR_MODE = "ar_mode"
         private const val KEY_AR_SIZE = "ar_size"
         private const val KEY_AR_LH = "ar_lh"

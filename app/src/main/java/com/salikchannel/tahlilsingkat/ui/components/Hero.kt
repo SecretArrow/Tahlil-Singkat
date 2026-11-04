@@ -33,7 +33,7 @@ import com.salikchannel.tahlilsingkat.ui.clickableNoRipple
 private data class Cta(val label: String, val sectionIndex: Int, val primary: Boolean)
 
 private val ctas = listOf(
-    Cta("Mulai Membaca", 0, true),
+    Cta("Mulai", 0, true),
     Cta("Tahlil", 2, false),
     Cta("Dzikir", 6, false),
     Cta("Doa", 7, false),

@@ -39,6 +39,7 @@ fun SectionCard(
     section: Section,
     toggles: DisplayToggles,
     arabic: com.salikchannel.tahlilsingkat.data.ArabicStyleSettings,
+    arabicCommaMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val cfg = typeConfig[section.type]!!
@@ -120,7 +121,7 @@ fun SectionCard(
             // Blocks.
             Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 section.blocks.forEach { block ->
-                    BlockView(block, toggles, arabic, allHidden)
+                    BlockView(block, toggles, arabic, arabicCommaMode, allHidden)
                 }
             }
         }
@@ -132,12 +133,15 @@ private fun BlockView(
     block: ContentBlock,
     toggles: DisplayToggles,
     arabic: com.salikchannel.tahlilsingkat.data.ArabicStyleSettings,
+    arabicCommaMode: Boolean,
     allHidden: Boolean,
 ) {
     val extra = LocalTahlilExtraColors.current
+    // Use the comma variant when the user enabled it and the block provides one.
+    val arabicText = if (arabicCommaMode && block.arabicComma != null) block.arabicComma else block.arabic
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         // Arabic (in a gradient box).
-        if (toggles.arabic && block.arabic != null) {
+        if (toggles.arabic && arabicText != null) {
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -149,7 +153,7 @@ private fun BlockView(
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 ArabicText(
-                    text = block.arabic,
+                    text = arabicText,
                     settings = arabic,
                     repeat = block.repeat,
                 )

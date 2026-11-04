@@ -125,6 +125,21 @@ fun DisplaySettingsSheet(settings: SettingsState, show: Boolean, onDismiss: () -
             ) { settings.setKeepScreen(it) }
 
             Spacer(Modifier.height(16.dp))
+            // Section header "Teks Arab".
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.TextFields, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.size(6.dp))
+                Text("TEKS ARAB", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(8.dp))
+            SwitchRow(
+                "Koma Mengikuti Terjemahan",
+                if (settings.arabicCommaMode) "Teks Arab memakai koma (،) mengikuti koma terjemahan"
+                else "Teks Arab tanpa koma tambahan (default)",
+                settings.arabicCommaMode,
+            ) { settings.setArabicComma(it) }
+
+            Spacer(Modifier.height(16.dp))
             ResetRow(onReset = { settings.resetToggles() })
         }
     }
