@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- White crescent + star foreground, centered in the 108dp adaptive safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Crescent: outer circle r=26 centred at (50,54), inner circle r=22 offset right -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M50,28
+            a26,26 0 1,0 0,52
+            a22,26 0 1,1 0,-52 z" />
+    <!-- Small accompanying star/dot -->
+    <path
+        android:fillColor="#FFE0AD51"
+        android:pathData="M74,38 l2.5,5.5 l6,0.6 l-4.5,4 l1.4,5.9 l-5.4,-3.1 l-5.4,3.1 l1.4,-5.9 l-4.5,-4 l6,-0.6 z" />
+</vector>

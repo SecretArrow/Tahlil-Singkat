@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch/splash background — warm cream (light) matching the Compose theme. -->
+    <color name="launch_background">#FDFAF2</color>
+    <color name="ic_launcher_background">#005C41</color>
+</resources>
