@@ -48,6 +48,12 @@ class MainActivityE2ETest {
         // restore, theme at default, hero at the top of the list.
         composeRule.activityRule.scenario.recreate()
         composeRule.waitForIdle()
+        // The LazyColumn's restore LaunchedEffect (scrollToItem) runs after
+        // composition settles; wait until the hero CTA is actually present
+        // so the tests below never race the restore scroll.
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Mulai").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
