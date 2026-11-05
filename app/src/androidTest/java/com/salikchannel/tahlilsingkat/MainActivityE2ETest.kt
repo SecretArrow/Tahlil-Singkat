@@ -7,6 +7,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import android.content.Context
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,15 +23,32 @@ import org.junit.runner.RunWith
  *   - display-settings sheet: layer toggles + new "Warnai Kata Arab" toggle
  *   - toggling all layers off shows the all-hidden hint
  *
+ * Tests run in one process and SharedPreferences persist across them, so
+ * [resetAppState] clears the prefs and recreates the activity before every
+ * test — otherwise the "resume last read" feature (v2.2.0) makes later
+ * tests start scrolled to an earlier test's section, off the hero.
+ *
  * Texts that legitimately appear in multiple places (title in top bar +
  * hero, "Pembukaan" in drawer + section card, the hint in every visible
- * section card) are matched with onAllNodesWithText().onFirst().
+ * section card) are matched with onAllNodesWithText()[n].
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityE2ETest {
 
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Before
+    fun resetAppState() {
+        // Must match SettingsState's PREFS name ("tahlil_prefs").
+        val prefs = InstrumentationRegistry.getInstrumentation()
+            .targetContext.getSharedPreferences("tahlil_prefs", Context.MODE_PRIVATE)
+        prefs.edit().clear().commit()
+        // Recreate so the app re-reads the (now empty) prefs — no last-read
+        // restore, theme at default, hero at the top of the list.
+        composeRule.activityRule.scenario.recreate()
+        composeRule.waitForIdle()
+    }
 
     @Test
     fun heroShowsTitleStartButtonAndBismillah() {
