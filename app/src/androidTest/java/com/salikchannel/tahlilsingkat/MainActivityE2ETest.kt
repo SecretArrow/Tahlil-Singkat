@@ -10,28 +10,22 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import android.content.Context
 import org.junit.Before
+import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 
 /**
  * E2E Compose UI tests — drive the real MainActivity on an emulator and
  * verify the user-facing features documented in CHANGELOG.md.
  *
- * AndroidJUnit4 runs methods alphabetically, so tests are prefixed to make
- * the order deterministic and independent of the v2.2.0 resume-last-read
- * feature: hero-dependent tests run FIRST while the list is still at the
- * top; the drawer test (which navigates to section 6 and persists that
- * position) runs LAST. recreate() cannot restore the top position because
- * rememberLazyListState saves the scroll index across recreation.
- *
- * [resetAppState] still clears SharedPreferences between tests so the
- * sheet-toggle tests each start from the documented defaults.
- *
- * Texts that legitimately appear in multiple places (title in top bar +
- * hero, "Pembukaan" in drawer + section card, the hint in every visible
- * section card) are matched with onAllNodesWithText()[n].
+ * AndroidJUnit4 does NOT run methods alphabetically by default (JUnit's
+ * default order is deterministic-but-arbitrary, which is why the a01/z99
+ * prefixes alone were not enough) — @FixMethodOrder(NAME_ASCENDING) makes
+ * the prefixes actually control execution order.
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 class MainActivityE2ETest {
 
@@ -54,8 +48,11 @@ class MainActivityE2ETest {
         composeRule.onAllNodesWithText("Tahlil Singkat")[0].assertIsDisplayed()
         composeRule.onAllNodesWithText("Tahlil Singkat")[1].assertIsDisplayed()
         composeRule.onNodeWithText("Mulai").assertIsDisplayed()
+        // CTA labels: "Tahlil" and "Doa" are unique; "Dzikir" also matches
+        // section 7's subtitle ("Dzikir yang paling utama") which renders
+        // at the bottom of the initial viewport — assert any instance.
         composeRule.onNodeWithText("Tahlil").assertIsDisplayed()
-        composeRule.onNodeWithText("Dzikir").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Dzikir")[0].assertIsDisplayed()
         composeRule.onNodeWithText("Doa").assertIsDisplayed()
         composeRule.onNodeWithText("بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيْمِ").assertIsDisplayed()
     }
