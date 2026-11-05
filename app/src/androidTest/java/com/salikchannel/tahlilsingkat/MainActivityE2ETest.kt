@@ -16,17 +16,17 @@ import org.junit.runner.RunWith
 
 /**
  * E2E Compose UI tests — drive the real MainActivity on an emulator and
- * verify the user-facing features documented in CHANGELOG.md:
- *   - hero renders with the "Mulai" CTA and Bismillah
- *   - "Mulai" scrolls to the first section
- *   - navigation drawer lists all 11 sections
- *   - display-settings sheet: layer toggles + new "Warnai Kata Arab" toggle
- *   - toggling all layers off shows the all-hidden hint
+ * verify the user-facing features documented in CHANGELOG.md.
  *
- * Tests run in one process and SharedPreferences persist across them, so
- * [resetAppState] clears the prefs and recreates the activity before every
- * test — otherwise the "resume last read" feature (v2.2.0) makes later
- * tests start scrolled to an earlier test's section, off the hero.
+ * AndroidJUnit4 runs methods alphabetically, so tests are prefixed to make
+ * the order deterministic and independent of the v2.2.0 resume-last-read
+ * feature: hero-dependent tests run FIRST while the list is still at the
+ * top; the drawer test (which navigates to section 6 and persists that
+ * position) runs LAST. recreate() cannot restore the top position because
+ * rememberLazyListState saves the scroll index across recreation.
+ *
+ * [resetAppState] still clears SharedPreferences between tests so the
+ * sheet-toggle tests each start from the documented defaults.
  *
  * Texts that legitimately appear in multiple places (title in top bar +
  * hero, "Pembukaan" in drawer + section card, the hint in every visible
@@ -40,24 +40,16 @@ class MainActivityE2ETest {
 
     @Before
     fun resetAppState() {
-        // Must match SettingsState's PREFS name ("tahlil_prefs").
+        // Must match SettingsState's PREFS name ("tahlil_prefs"). Only the
+        // preference values (toggles, theme, last-read index) live here.
         val prefs = InstrumentationRegistry.getInstrumentation()
             .targetContext.getSharedPreferences("tahlil_prefs", Context.MODE_PRIVATE)
         prefs.edit().clear().commit()
-        // Recreate so the app re-reads the (now empty) prefs — no last-read
-        // restore, theme at default, hero at the top of the list.
-        composeRule.activityRule.scenario.recreate()
         composeRule.waitForIdle()
-        // The LazyColumn's restore LaunchedEffect (scrollToItem) runs after
-        // composition settles; wait until the hero CTA is actually present
-        // so the tests below never race the restore scroll.
-        composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodesWithText("Mulai").fetchSemanticsNodes().isNotEmpty()
-        }
     }
 
     @Test
-    fun heroShowsTitleStartButtonAndBismillah() {
+    fun a01_heroShowsTitleStartButtonAndBismillah() {
         // "Tahlil Singkat" appears in the top bar AND the hero title.
         composeRule.onAllNodesWithText("Tahlil Singkat")[0].assertIsDisplayed()
         composeRule.onAllNodesWithText("Tahlil Singkat")[1].assertIsDisplayed()
@@ -69,7 +61,7 @@ class MainActivityE2ETest {
     }
 
     @Test
-    fun startButtonScrollsToFirstSection() {
+    fun a02_startButtonScrollsToFirstSection() {
         composeRule.onNodeWithText("Mulai").performClick()
         composeRule.waitForIdle()
         // "Pembukaan" exists in the drawer AND the section card; after the
@@ -79,20 +71,7 @@ class MainActivityE2ETest {
     }
 
     @Test
-    fun drawerListsAllElevenSections() {
-        composeRule.onNodeWithContentDescription("Daftar isi").performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithText("Daftar Isi").assertIsDisplayed()
-        composeRule.onNodeWithText("11 bagian").assertIsDisplayed()
-        // A deep section only reachable through the drawer list.
-        composeRule.onNodeWithText("Ayat Kursi").performClick()
-        composeRule.waitForIdle()
-        // Navigating from the drawer jumps to section 6 (Ayat Kursi).
-        composeRule.onAllNodesWithText("Ayat Kursi")[0].assertIsDisplayed()
-    }
-
-    @Test
-    fun displaySheetShowsAllTogglesIncludingColorize() {
+    fun a03_displaySheetShowsAllTogglesIncludingColorize() {
         composeRule.onNodeWithContentDescription("Pengaturan tampilan").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Pengaturan Tampilan").assertIsDisplayed()
@@ -106,7 +85,7 @@ class MainActivityE2ETest {
     }
 
     @Test
-    fun colorizeToggleFlipsSubtitleText() {
+    fun a04_colorizeToggleFlipsSubtitleText() {
         composeRule.onNodeWithContentDescription("Pengaturan tampilan").performClick()
         composeRule.waitForIdle()
         // Default off.
@@ -119,7 +98,7 @@ class MainActivityE2ETest {
     }
 
     @Test
-    fun hidingAllLayersShowsHint() {
+    fun a05_hidingAllLayersShowsHint() {
         composeRule.onNodeWithContentDescription("Pengaturan tampilan").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Arab").performClick()
@@ -133,5 +112,20 @@ class MainActivityE2ETest {
         composeRule.onAllNodesWithText(
             "Semua tampilan disembunyikan. Aktifkan minimal satu di tombol Tampilan.",
         )[0].assertIsDisplayed()
+    }
+
+    @Test
+    fun z99_drawerListsAllElevenSections() {
+        // Runs last: navigating from the drawer persists the read position,
+        // which the earlier hero-dependent tests must not observe.
+        composeRule.onNodeWithContentDescription("Daftar isi").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Daftar Isi").assertIsDisplayed()
+        composeRule.onNodeWithText("11 bagian").assertIsDisplayed()
+        // A deep section only reachable through the drawer list.
+        composeRule.onNodeWithText("Ayat Kursi").performClick()
+        composeRule.waitForIdle()
+        // Navigating from the drawer jumps to section 6 (Ayat Kursi).
+        composeRule.onAllNodesWithText("Ayat Kursi")[0].assertIsDisplayed()
     }
 }
