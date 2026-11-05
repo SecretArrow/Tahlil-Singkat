@@ -40,6 +40,7 @@ fun SectionCard(
     toggles: DisplayToggles,
     arabic: com.salikchannel.tahlilsingkat.data.ArabicStyleSettings,
     arabicCommaMode: Boolean = false,
+    colorizeArabic: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val cfg = typeConfig[section.type]!!
@@ -121,7 +122,7 @@ fun SectionCard(
             // Blocks.
             Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 section.blocks.forEach { block ->
-                    BlockView(block, toggles, arabic, arabicCommaMode, allHidden)
+                    BlockView(block, toggles, arabic, arabicCommaMode, colorizeArabic, allHidden)
                 }
             }
         }
@@ -134,6 +135,7 @@ private fun BlockView(
     toggles: DisplayToggles,
     arabic: com.salikchannel.tahlilsingkat.data.ArabicStyleSettings,
     arabicCommaMode: Boolean,
+    colorizeArabic: Boolean,
     allHidden: Boolean,
 ) {
     val extra = LocalTahlilExtraColors.current
@@ -156,6 +158,7 @@ private fun BlockView(
                     text = arabicText,
                     settings = arabic,
                     repeat = block.repeat,
+                    colorize = colorizeArabic,
                 )
             }
         }

@@ -40,6 +40,7 @@ import com.salikchannel.tahlilsingkat.data.ArabicAlign
 import com.salikchannel.tahlilsingkat.data.ArabicStyleMode
 import com.salikchannel.tahlilsingkat.data.arabicModeConfigs
 import com.salikchannel.tahlilsingkat.prefs.SettingsState
+import com.salikchannel.tahlilsingkat.prefs.SettingsStateBase
 import com.salikchannel.tahlilsingkat.ui.components.ArabicText
 import com.salikchannel.tahlilsingkat.ui.clickableNoRipple
 
@@ -79,6 +80,7 @@ private fun SwitchRow(
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickableNoRipple(enabled = enabled) { onChange(!checked) }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -138,6 +140,13 @@ fun DisplaySettingsSheet(settings: SettingsState, show: Boolean, onDismiss: () -
                 else "Teks Arab tanpa koma tambahan (default)",
                 settings.arabicCommaMode,
             ) { settings.setArabicComma(it) }
+            Spacer(Modifier.height(8.dp))
+            SwitchRow(
+                "Warnai Kata Arab",
+                if (settings.colorizeArabic) "Setiap kata Arab diberi warna bergantian agar mudah dibedakan"
+                else "Kata Arab memakai satu warna (default)",
+                settings.colorizeArabic,
+            ) { settings.setColorize(it) }
 
             Spacer(Modifier.height(16.dp))
             ResetRow(onReset = { settings.resetToggles() })
@@ -204,8 +213,8 @@ fun ArabicStyleSheet(settings: SettingsState, show: Boolean, onDismiss: () -> Un
             Spacer(Modifier.height(20.dp))
             Text("TIPOGRAFI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
-            SliderRow("Ukuran Huruf", settings.arabicStyle.fontSize, SettingsState.MIN_SIZE..SettingsState.MAX_SIZE, 39, format = { "%.2f rem".format(it) }) { settings.setArabic(fontSize = it) }
-            SliderRow("Jarak Antarbaris", settings.arabicStyle.lineHeight, SettingsState.MIN_LH..SettingsState.MAX_LH, 35, format = { "%.2f".format(it) }) { settings.setArabic(lineHeight = it) }
+            SliderRow("Ukuran Huruf", settings.arabicStyle.fontSize, SettingsStateBase.MIN_SIZE..SettingsStateBase.MAX_SIZE, 39, format = { "%.2f rem".format(it) }) { settings.setArabic(fontSize = it) }
+            SliderRow("Jarak Antarbaris", settings.arabicStyle.lineHeight, SettingsStateBase.MIN_LH..SettingsStateBase.MAX_LH, 35, format = { "%.2f".format(it) }) { settings.setArabic(lineHeight = it) }
             SliderRow("Jarak Antarkata", settings.arabicStyle.wordSpacing, 0f..0.6f, 59, format = { "%.2f em".format(it) }) { settings.setArabic(wordSpacing = it) }
             SliderRow("Jarak Antar Huruf", settings.arabicStyle.letterSpacing, 0f..0.15f, 29, format = { "%.3f em".format(it) }) { settings.setArabic(letterSpacing = it) }
 

@@ -228,6 +228,7 @@ private fun AppContent(settings: SettingsState) {
                             toggles = settings.displayToggles,
                             arabic = settings.arabicStyle,
                             arabicCommaMode = settings.arabicCommaMode,
+                            colorizeArabic = settings.colorizeArabic,
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }

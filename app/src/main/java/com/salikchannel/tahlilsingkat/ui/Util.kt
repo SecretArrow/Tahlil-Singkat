@@ -9,9 +9,10 @@ import androidx.compose.ui.Modifier
 /** Clickable without the Material ripple — matches the web app's plain hover
  *  transitions (cleaner on a reading-focused UI). */
 @Composable
-fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
+fun Modifier.clickableNoRipple(enabled: Boolean = true, onClick: () -> Unit): Modifier =
     this.clickable(
         interactionSource = remember { MutableInteractionSource() },
         indication = null,
+        enabled = enabled,
         onClick = onClick,
     )

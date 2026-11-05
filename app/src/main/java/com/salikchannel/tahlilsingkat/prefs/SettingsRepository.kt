@@ -1,6 +1,7 @@
 package com.salikchannel.tahlilsingkat.prefs
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -21,8 +22,17 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
  * SharedPreferences (the native equivalent of the web app's cookie persistence).
  * Every setter mutates state AND persists immediately.
  */
-class SettingsState(context: Context) {
-    private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+class SettingsState(context: Context) : SettingsStateBase(
+    context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+) {
+    companion object { private const val PREFS = "tahlil_prefs" }
+}
+
+/**
+ * State + persistence logic with the [SharedPreferences] injected, so JVM unit
+ * tests can drive it with a fake without any Android framework.
+ */
+open class SettingsStateBase(private val prefs: SharedPreferences) {
 
     var themeMode: ThemeMode by mutableStateOf(loadThemeMode())
         private set
@@ -37,6 +47,11 @@ class SettingsState(context: Context) {
      *  provide an [com.salikchannel.tahlilsingkat.data.ContentBlock.arabicComma]
      *  variant). Default off. */
     var arabicCommaMode: Boolean by mutableStateOf(prefs.getBoolean(KEY_ARABIC_COMMA, false))
+        private set
+    /** When true, every Arabic word is tinted with one of two alternating
+     *  shades (light: #000000/#011b45, dark: #ffffff/#d9dadb) so consecutive
+     *  words are visually distinguishable. Default off. */
+    var colorizeArabic: Boolean by mutableStateOf(prefs.getBoolean(KEY_COLORIZE_ARABIC, false))
         private set
     /** Last section index the user was reading (0-based, -1 = not yet read).
      *  Used to restore scroll position when the app reopens. */
@@ -107,6 +122,11 @@ class SettingsState(context: Context) {
         prefs.edit().putBoolean(KEY_ARABIC_COMMA, on).apply()
     }
 
+    fun setColorize(on: Boolean) {
+        colorizeArabic = on
+        prefs.edit().putBoolean(KEY_COLORIZE_ARABIC, on).apply()
+    }
+
     fun setLastRead(index: Int) {
         if (index == lastReadSection) return
         lastReadSection = index
@@ -153,20 +173,20 @@ class SettingsState(context: Context) {
     }
 
     companion object {
-        private const val PREFS = "tahlil_prefs"
-        private const val KEY_THEME = "theme"
-        private const val KEY_ARABIC = "arabic"
-        private const val KEY_TRANSLIT = "translit"
-        private const val KEY_TRANSLATION = "translation"
-        private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
-        private const val KEY_ARABIC_COMMA = "arabic_comma_mode"
-        private const val KEY_LAST_SECTION = "last_read_section"
-        private const val KEY_AR_MODE = "ar_mode"
-        private const val KEY_AR_SIZE = "ar_size"
-        private const val KEY_AR_LH = "ar_lh"
-        private const val KEY_AR_WS = "ar_ws"
-        private const val KEY_AR_LS = "ar_ls"
-        private const val KEY_AR_ALIGN = "ar_align"
+        internal const val KEY_THEME = "theme"
+        internal const val KEY_ARABIC = "arabic"
+        internal const val KEY_TRANSLIT = "translit"
+        internal const val KEY_TRANSLATION = "translation"
+        internal const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
+        internal const val KEY_ARABIC_COMMA = "arabic_comma_mode"
+        internal const val KEY_COLORIZE_ARABIC = "colorize_arabic"
+        internal const val KEY_LAST_SECTION = "last_read_section"
+        internal const val KEY_AR_MODE = "ar_mode"
+        internal const val KEY_AR_SIZE = "ar_size"
+        internal const val KEY_AR_LH = "ar_lh"
+        internal const val KEY_AR_WS = "ar_ws"
+        internal const val KEY_AR_LS = "ar_ls"
+        internal const val KEY_AR_ALIGN = "ar_align"
         // Slider bounds (mirror arabic-style-panel.tsx).
         const val MIN_SIZE = 1.2f; const val MAX_SIZE = 3.2f
         const val MIN_LH = 1.4f; const val MAX_LH = 3.2f

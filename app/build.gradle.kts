@@ -14,8 +14,8 @@ android {
         applicationId = "com.salikchannel.tahlilsingkat"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "2.2.0"
+        versionCode = 7
+        versionName = "2.3.0"
         // App name shown under the launcher icon.
         resValue("string", "app_name", "Tahlil Singkat")
     }
@@ -102,4 +102,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // ── Unit tests (JVM) ────────────────────────────────────────────────────
+    testImplementation("junit:junit:4.13.2")
+
+    // ── Instrumented / Compose UI tests (e2e, run on emulator in CI) ────────
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation(composeBom)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
