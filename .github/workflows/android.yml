@@ -83,17 +83,17 @@ jobs:
           profile: pixel_7
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            ./gradlew :app:connectedDebugAndroidTest --no-daemon --max-workers=2
-            # Fail the job if zero tests were discovered (broken runner config).
-            RESULTS=$(find app/build/outputs/androidTest-results -name "*.xml" -exec grep -h "tests=" {} \;)
-            echo "Instrumented test summary: $RESULTS"
-            TOTAL=$(echo "$RESULTS" | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s+0}')
-            echo "Total instrumented tests: $TOTAL"
-            if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
-              echo "::error::connectedAndroidTest ran 0 tests — test runner is misconfigured"
-              exit 1
-            fi
+          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --max-workers=2
+
+      # Fail the job if zero tests were discovered (broken runner config).
+      - name: Verify instrumented test count
+        run: |
+          TOTAL=$(find app/build/outputs/androidTest-results -name '*.xml' -exec grep -h 'tests=' {} + | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s+0}')
+          echo "Total instrumented tests: $TOTAL"
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::error::connectedAndroidTest ran 0 tests - test runner is misconfigured"
+            exit 1
+          fi
 
       - name: Upload e2e results
         if: always()
