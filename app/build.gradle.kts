@@ -16,6 +16,10 @@ android {
         targetSdk = 34
         versionCode = 7
         versionName = "2.3.0"
+        // Runner for the instrumented Compose UI tests (e2e job in CI).
+        // Without this AGP defaults to the legacy android.test runner, which
+        // finds 0 JUnit4 tests — the e2e job would "pass" while testing nothing.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // App name shown under the launcher icon.
         resValue("string", "app_name", "Tahlil Singkat")
     }
